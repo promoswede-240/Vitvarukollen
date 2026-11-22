@@ -5,7 +5,7 @@ const G = typeof window !== 'undefined' ? window : globalThis;
 const APPS = G.VK_APPLIANCES;
 const TZ = 'Europe/Stockholm';
 const MIN = 60000, Q = 15 * MIN, H = 60 * MIN;
-const VERSION = '3.1.0';
+const VERSION = '3.1.1';
 
 /* ---------- lagring ---------- */
 const store = {
@@ -310,9 +310,10 @@ function renderStatus() {
   $('#refresh').classList.toggle('spin', !!status.loading);
   if (status.loading && !quarters.length) { t.textContent = 'Hämtar priser…'; return; }
   if (status.demo) { d.className = 'dot bad'; t.textContent = 'Demodata – priserna kunde inte hämtas'; return; }
-  const u = status.updated ? hm(status.updated) : '–';
-  d.className = 'dot' + (status.tomorrow ? ' ok' : '');
-  t.textContent = `${cfg.area} uppdaterad ${u} · ` + (status.tomorrow ? 'Imorgon klar' : 'Morgondagens priser släpps ca 13:00');
+  // Grönt = dagens priser finns. Orange bara om morgondagens dröjer efter 13:30.
+  const late = !status.tomorrow && minOfDay(Date.now()) >= 13 * 60 + 30;
+  d.className = 'dot' + (late ? '' : ' ok');
+  t.textContent = `${cfg.area} · Idag ✓ · Imorgon ` + (status.tomorrow ? '✓' : late ? 'dröjer – tryck ↻' : 'kommer ca 13:00');
 }
 
 function renderMachines() {
